@@ -1,38 +1,91 @@
-const { create } = require('connect-mongo');
+const path = require('path');
 const Product = require('../models/Product');
 
-exports.list = async (req, res) => {
-    const productos = await Product.find().sort({createdAt: -1});
-    res.render('products/list', {productos});
-};
+module.exports = {
+  // Listar productos
+    list: async (req, res) => {
+        try {
+            const products = await Product.find().sort({ createdAt: -1 });
+            res.render('products/list', { products });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error al listar productos');
+        }
+    },
 
-exports.showCreateForm = (req, res) => {
-    res.render('products/form', {action: '/products/create', method: 'POST'});
-};
+    // Mostrar formulario crear
+    showCreateForm: (req, res) => {
+        res.render('products/form', {
+            action: '/products/create',
+            method: 'POST',
+            product: {},
+        });
+    },
 
-exports.create = async (req, res) => {
-    const {nombre, precio, descripcion} = req.body;
-    const imagen = req.file ?`/uploads/${req.file.filename}` : '';
-    const p = new Product({nombre, precio, descripcion, imagen});
-    await p.save();
-    res.redirect('/products');
-};
+    // Crear producto
+    create: async (req, res) => {
+        try {
+            const { nombre, precio, descripcion } = req.body;
+            let imagen = '';
+            if (req.file) {
+            // Guardar la ruta pública (no la absoluta)
+                imagen = '/uploads/' + req.file.filename;
+            }
+            const product = new Product({ nombre, precio, descripcion, imagen });
+            await product.save();
+            res.redirect('/products');
+        } catch (err) {
+        console.error(err);
+        res.status(500).send('Error al crear producto');
+        }
+    },
 
-exports.showEditForm = async (req, res) => {
-    const p = await Product.findById(req.params.id);
-    if (!p) return res.redirect('/products');
-    res.render('products/form', {product: p, action: `/products/edit/${p._id}`, method: 'POST'});
-};
+    // Mostrar formulario de edición
+    showEditForm: async (req, res) => {
+        try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).send('Producto no encontrado');
+        res.render('products/form', {
+            action: `/products/edit/${product._id}`,
+            method: 'POST',
+            product,
+        });
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error al obtener producto');
+        }
+    },
 
-exports.edit = async (req, res) => {
-    const {nombre, precio, descripcion} = req.body;
-    const update = {nombre, precio, descripcion};
-    if (req.file) update.imagen = `/uploads/${req.file.filename}`;
-    await Product.findByIdAndUpdate(req.params.id, update);
-    res.redirect('/products');
-};
+    // Editar producto
+    edit: async (req, res) => {
+        try {
+            const { nombre, precio, descripcion } = req.body;
+            const product = await Product.findById(req.params.id);
+            if (!product) return res.status(404).send('Producto no encontrado');
 
-exports.remove = async (req,res) => {
-    await Product.findByIdAndDelete(req.params.id);
-    res.redirect('/products');
+            product.nombre = nombre;
+            product.precio = precio;
+            product.descripcion = descripcion;
+            if (req.file) {
+                product.imagen = '/uploads/' + req.file.filename;
+            }
+
+            await product.save();
+            res.redirect('/products');
+            } catch (err) {
+                console.error(err);
+                res.status(500).send('Error al editar producto');
+            }
+        },
+
+    // Eliminar producto
+    remove: async (req, res) => {
+        try {
+            await Product.findByIdAndDelete(req.params.id);
+            res.redirect('/products');
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error al eliminar producto');
+        }
+    },
 };

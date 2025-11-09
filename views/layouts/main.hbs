@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>MiInventarioExpress</title>
+        <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body>
+        {{> header}}
+        <main class="container">
+            {{{body}}}
+        </main>
+        {{> footer}}
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            // script de chat común (si hay un template que lo use)
+            if (window.location.pathname === '/products' && typeof io !== 'undefined') {
+            // nothing here by default
+            }
+        </script>
+    </body>
+</html>

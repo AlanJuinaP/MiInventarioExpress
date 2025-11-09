@@ -1,0 +1,35 @@
+<section>
+    <h2>Productos</h2>
+
+    {{#if user}}
+        {{#ifEquals user.role 'admin'}}
+            <a class="btn" href="/products/create">Crear producto</a>
+        {{/ifEquals}}
+    {{/if}}
+
+    {{#if products.length}}
+        <div class="grid">
+        {{#each products}}
+            <article class="card">
+                {{#if imagen}}
+                    <img src="{{imagen}}" alt="{{nombre}}" class="thumb">
+                {{/if}}
+                <h3>{{nombre}}</h3>
+                <p>{{descripcion}}</p>
+                <p><strong>$ {{precio}}</strong></p>
+
+                {{#if ../user}}
+                    {{#ifEquals ../user.role 'admin'}}
+                        <a class="btn" href="/products/edit/{{_id}}">Editar</a>
+                        <form action="/products/delete/{{_id}}" method="POST" style="display:inline;">
+                            <button type="submit" onclick="return confirm('¿Seguro que deseas eliminar este producto?')">Eliminar</button>
+                        </form>
+                    {{/ifEquals}}
+                {{/if}}
+            </article>
+        {{/each}}
+    </div>
+    {{else}}
+    <p>No hay productos disponibles.</p>
+    {{/if}}
+</section>

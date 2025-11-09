@@ -1,0 +1,19 @@
+<section>
+    <h2>Login</h2>
+
+    {{#if error}}
+        <p class="errors">{{error}}</p>
+    {{/if}}
+
+    <form action="/login" method="POST">
+        <label>Usuario
+            <input type="text" name="username" value="{{username}}">
+        </label>
+        <label>Contraseña
+            <input type="password" name="password">
+        </label>
+        <button type="submit">Entrar</button>
+    </form>
+
+    <p>Si es la primera vez, visita <a href="/init-admin">/init-admin</a> (solo desarrollo) para crear admin.</p>
+</section>

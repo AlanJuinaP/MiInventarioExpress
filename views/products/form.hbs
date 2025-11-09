@@ -1,0 +1,33 @@
+<section>
+    <h2>{{#if product._id}}Editar producto{{else}}Crear producto{{/if}}</h2>
+
+    {{#if errors}}
+        <ul class="errors">
+            {{#each errors}}
+                <li>{{msg}}</li>
+            {{/each}}
+        </ul>
+    {{/if}}
+
+    <form action="{{action}}" method="POST" enctype="multipart/form-data">
+        <label>Nombre
+            <input type="text" name="nombre" value="{{#if product.nombre}}{{product.nombre}}{{else}}{{old.nombre}}{{/if}}">
+        </label>
+        <label>Precio
+            <input type="number" step="0.01" name="precio" value="{{#if product.precio}}{{product.precio}}{{else}}{{old.precio}}{{/if}}">
+        </label>
+        <label>Descripción
+            <textarea name="descripcion">{{#if product.descripcion}}{{product.descripcion}}{{else}}{{old.descripcion}}{{/if}}</textarea>
+        </label>
+        <label>Imagen
+            <input type="file" name="imagen" accept="image/*">
+        </label>
+
+        {{#if product.imagen}}
+            <p>Imagen actual:</p>
+            <img src="{{product.imagen}}" alt="{{product.nombre}}" class="thumb">
+        {{/if}}
+
+        <button type="submit">Guardar</button>
+    </form>
+</section>

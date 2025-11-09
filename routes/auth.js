@@ -1,12 +1,30 @@
-const express =  require('express');
+const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
-router.get('/login', authController.getLogin);
-router.post('/login', authController.postLogin);
+// 🔹 Ruta raíz
+router.get('/', (req, res) => {
+    if (req.session && req.session.user) {
+        return res.redirect('/products');
+    } else {
+        return res.redirect('/login');
+    }
+});
+
+// 🔹 Login y Logout
+router.get('/login', authController.showLogin);
+router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
-//ruta que permitira crear admi en desarrollo
-router.post('/register-admin', authController.registerAdmin);
+// 🔹 Inicializar admin (solo desarrollo)
+router.get('/init-admin', async (req, res) => {
+    try {
+        await authController.ensureAdminExists();
+        res.send('Usuario admin creado -> user: admin | pass: admin123');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error al inicializar admin');
+    }
+});
 
 module.exports = router;

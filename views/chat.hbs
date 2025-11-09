@@ -1,0 +1,27 @@
+<section id="chat">
+    <h2>Chat en tiempo real</h2>
+    <div id="messages"></div>
+    <form id="chatForm">
+        <input id="msg" autocomplete="off" placeholder="Escribe...">
+        <button>Enviar</button>
+    </form>
+    <script>
+        const socket = io();
+        const messages = document.getElementById('messages');
+        const form = document.getElementById('chatForm');
+        const input = document.getElementById('msg');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const payload = { user: "{{user.username}}", text: input.value, time: new Date().toISOString() };
+            socket.emit('chat:message', payload);
+            input.value = '';
+        });
+
+        socket.on('chat:message', (m) => {
+            const p = document.createElement('p');
+            p.textContent = `${m.user}: ${m.text}`;
+            messages.appendChild(p);
+        });
+    </script>
+</section>

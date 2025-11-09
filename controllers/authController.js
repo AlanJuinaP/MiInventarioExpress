@@ -1,33 +1,47 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
-exports.getLogin = (req, res) => {
-    res.render('auth/login');
-};
+module.exports = {
+    showLogin: (req, res) => {
+        res.render('auth/login', { action: '/login', method: 'POST' });
+    },
 
-exports.postLogin = async (req, res) => {
-    const {username, password} = req.body;
-    const user = await User.findOne({username});
-    if (!user) return res.render('auth/login', {error: 'Usuerio o contraseña incorrectos'});
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if(!match) return res.render('auth/login', {error: 'Usuario o contraseña incorrectos'});
+    login: async (req, res) => {
+        try {
+            const { username, password } = req.body;
+            const user = await User.findOne({ username });
+            if (!user) {
+                return res.render('auth/login', { error: 'Credenciales inválidas', username });
+            }
+            const match = await bcrypt.compare(password, user.passwordHash);
+            if (!match) {
+                return res.render('auth/login', { error: 'Credenciales inválidas', username });
+            }
+            // guardamos usuario básico en sesión
+            req.session.user = { id: user._id, username: user.username, role: user.role };
+            res.redirect('/products');
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Error en login');
+        }
+    },
 
-    req.session.user = {id: user._id, username: user.username, role: user.role};
-    res.redirect('/products');
-};
+    logout: (req, res) => {
+        req.session.destroy(err => {
+            res.clearCookie('connect.sid');
+            res.redirect('/login');
+        });
+    },
 
-exports.logout = (req, res) => {
-    req.session.destroy(() => res.redirect('/login'));
-};
-
-// creacion de admin (solo dev)
-exports.registerAdmin = async(req, res) => {
-    const {username, password} = req.body;
-    if (!username || !password) return res.status(400).send('username y password requeridos');
-    const exists = await User.findOne({ username });
-    if (exists) return res.status(400).send('Usuario ya existe');
-    const hash = await bcrypt.hash(password, 10);
-    const user = new User({ username, passwordHash: hash, role: 'admin' });
-    await user.save();
-    res.send('Admin creado');
+    // helper para crear un admin rápido si no existe (solo para desarrollo)
+    ensureAdminExists: async () => {
+        const adminUser = await User.findOne({ username: 'admin' });
+        if (!adminUser) {
+            const pass = 'admin123'; // cambia cuando subas al repo
+            const hash = await bcrypt.hash(pass, 10);
+            const u = new User({ username: 'admin', passwordHash: hash, role: 'admin' });
+            await u.save();
+            console.log('Usuario admin creado -> username: admin, password: admin123');
+        }
+    }
 };
